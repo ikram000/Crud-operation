@@ -44,10 +44,10 @@ const handleBookListStoreController = async (req, res) => {
 };
 
 const handlerBookDeleteController = async(req,res) =>{
-    const body= req.body
+    const {id}= req.params
+    // console.log("body.data", body);
     try {
-        const deleted = await Book.findByIdAndDelete(body.id)
-     // console.log('deleted', deleted);
+        const deleted = await Book.findByIdAndDelete(id)
         // if(deleted.length > 0){
          return res.json({
             Message: "Book deleted successfully",

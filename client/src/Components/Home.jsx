@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { bookBaseUrl } from '../axiosInstance';
 import { MdDelete } from "react-icons/md";
 import { FaPen } from "react-icons/fa6";
+import axios from 'axios';
 
 const Home = () => {
   const [bookForm, setBookForm] = useState({
@@ -67,6 +68,18 @@ const Home = () => {
       console.error('Submit error:', error);
     }
   };
+
+  const handleDelete= async (id)=>{
+    console.log("id",id);
+    try {
+      await axios.delete(`http://localhost:8000/book/deletebook/${id}`) 
+          getAllbookList();
+s
+    } catch (error) {
+      console.log("error in delete operation!",error)
+    }
+
+  }
 
   return (
     <div className='w-full px-5 py-5 min-h-screen'>
@@ -136,7 +149,7 @@ const Home = () => {
                   <div className="w-20 flex justify-center gap-5">
                     <div className="h-5 w-8 flex justify-center items-center bg-red-100 text-red-600">
 
-                      <span><MdDelete/></span>
+                      <span onClick={()=>handleDelete(book?._id)}><MdDelete/></span>
                     </div>
                   </div>
                   </td>
