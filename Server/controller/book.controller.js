@@ -46,15 +46,15 @@ const handleBookListStoreController = async (req, res) => {
 const handlerBookDeleteController = async(req,res) =>{
     const body= req.body
     try {
-        const deleted = await Book.deleteOne({_id:body.Id})
-      console.log('deleted',deleted)
-        if(deleted.acknowledged){
+        const deleted = await Book.findByIdAndDelete(body.id)
+     // console.log('deleted', deleted);
+        // if(deleted.length > 0){
          return res.json({
             Message: "Book deleted successfully",
             success: true,
            
         });
-        }
+        // }
     } catch (error) {
          return res.status(500).json({ Message: error.message, success: false });
     }

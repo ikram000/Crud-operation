@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { bookBaseUrl } from '../axiosInstance';
+import { MdDelete } from "react-icons/md";
+import { FaPen } from "react-icons/fa6";
 
 const Home = () => {
   const [bookForm, setBookForm] = useState({
@@ -129,7 +131,16 @@ const Home = () => {
                       ? new Date(book.PublishDate).toLocaleDateString()
                       : '—'}
                   </td>
-                  <td className='px-6 py-3'>Action</td>
+
+                  <td className="px-6 py-3 whitespace-nowrap">
+                  <div className="w-20 flex justify-center gap-5">
+                    <div className="h-5 w-8 flex justify-center items-center bg-red-100 text-red-600">
+
+                      <span><MdDelete/></span>
+                    </div>
+                  </div>
+                  </td>
+                  
                 </tr>
               ))
             ) : (
