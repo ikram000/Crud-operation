@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { bookBaseUrl } from '../axiosInstance';
+import { bookBaseUrl } from '../axiosInstance'; // Make sure your axios instance is configured
 import { MdDelete } from "react-icons/md";
 import { FaPen } from "react-icons/fa6";
 import axios from 'axios';
@@ -14,11 +14,12 @@ const Home = () => {
   });
 
   const [bookList, setBookList] = useState([]);
+  const [isupdating, setIsupdating] = useState(null); // store book ID instead of boolean
 
   // Fetch all books
   const getAllbookList = async () => {
     try {
-      const { data } = await bookBaseUrl.get('booklists');
+      const { data } = await bookBaseUrl.get('/booklists');
       setBookList(data?.BookList || []);
     } catch (error) {
       console.error('Get all books error:', error);
@@ -39,20 +40,25 @@ const Home = () => {
     }));
   };
 
-  // Submit form
+  // Handle Add / Update Submit
   const handleSubmit = async () => {
-    try {
-      const { BookName, BookTitle, Auther, SellingPrice } = bookForm;
+    const { BookName, BookTitle, Auther, SellingPrice } = bookForm;
 
-      if (!BookName || !BookTitle || !Auther || !SellingPrice) {
-        alert("All fields are required");
-        return;
+    if (!BookName || !BookTitle || !Auther || !SellingPrice) {
+      alert("All fields are required");
+      return;
+    }
+
+    try {
+      let response;
+      if (isupdating) {
+        response = await bookBaseUrl.put(`/updatebook/${isupdating}`, bookForm);
+      } else {
+        response = await bookBaseUrl.post("/addbook", bookForm);
       }
 
-      const { data } = await bookBaseUrl.post('/addbook', bookForm);
-
-      if (data?.success) {
-        alert(data?.Message);
+      if (response?.data?.success) {
+        alert(response.data.Message || "Operation successful");
         setBookForm({
           BookName: '',
           BookTitle: '',
@@ -60,26 +66,39 @@ const Home = () => {
           SellingPrice: '',
           PublishDate: '',
         });
-        getAllbookList(); // Refresh book list
+        setIsupdating(null);
+        getAllbookList();
       }
 
-      console.log(data);
     } catch (error) {
       console.error('Submit error:', error);
+      alert("Something went wrong");
     }
   };
 
-  const handleDelete= async (id)=>{
-    console.log("id",id);
-    try {
-      await axios.delete(`http://localhost:8000/book/deletebook/${id}`) 
-          getAllbookList();
-s
-    } catch (error) {
-      console.log("error in delete operation!",error)
-    }
+  // Populate form for editing
+  const handleEdit = (book) => {
+    setBookForm({
+      BookName: book?.BookName,
+      BookTitle: book?.BookTitle,
+      Auther: book?.Auther,
+      SellingPrice: book?.SellingPrice,
+      PublishDate: book?.PublishDate?.split("T")[0] || '',
+    });
+    setIsupdating(book._id);
+  };
 
-  }
+  // Delete book
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`http://localhost:8000/book/deletebook/${id}`);
+      getAllbookList();
+      alert("Book deleted");
+    } catch (error) {
+      console.error("Delete error:", error);
+      alert("Failed to delete");
+    }
+  };
 
   return (
     <div className='w-full px-5 py-5 min-h-screen'>
@@ -108,14 +127,32 @@ s
         ))}
       </div>
 
-      {/* Submit Button */}
+      {/* Buttons */}
       <div className='w-full flex justify-end mb-8'>
         <button
           className='bg-gray-700 text-white h-9 px-6 rounded-md hover:bg-gray-800'
           onClick={handleSubmit}
         >
-          SUBMIT
+          {isupdating ? "Update" : "Submit"}
         </button>
+
+        {isupdating && (
+          <button
+            className='ml-4 bg-red-500 text-white h-9 px-4 rounded-md hover:bg-red-600'
+            onClick={() => {
+              setIsupdating(null);
+              setBookForm({
+                BookName: '',
+                BookTitle: '',
+                Auther: '',
+                SellingPrice: '',
+                PublishDate: '',
+              });
+            }}
+          >
+            Cancel
+          </button>
+        )}
       </div>
 
       {/* Book Table */}
@@ -146,14 +183,15 @@ s
                   </td>
 
                   <td className="px-6 py-3 whitespace-nowrap">
-                  <div className="w-20 flex justify-center gap-5">
-                    <div className="h-5 w-8 flex justify-center items-center bg-red-100 text-red-600">
-
-                      <span onClick={()=>handleDelete(book?._id)}><MdDelete/></span>
+                    <div className="w-20 flex justify-center gap-5">
+                      <div className="h-5 w-8 flex justify-center items-center bg-red-100 text-red-600 cursor-pointer">
+                        <span onClick={() => handleDelete(book?._id)}><MdDelete /></span>
+                      </div>
+                      <div className="h-5 w-8 flex justify-center items-center bg-green-100 text-green-600 cursor-pointer">
+                        <span onClick={() => handleEdit(book)}><FaPen /></span>
+                      </div>
                     </div>
-                  </div>
                   </td>
-                  
                 </tr>
               ))
             ) : (

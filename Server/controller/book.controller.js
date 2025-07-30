@@ -26,7 +26,7 @@ const handleBookStoreController = async (req, res) => {
 const handleBookListStoreController = async (req, res) => {
     try {
         const bookList = await Book.find({});
-
+        console.log("booklist",bookList);
         return res.status(200).json({
             Message: "All books fetched successfully",
             success: true,
@@ -60,4 +60,22 @@ const handlerBookDeleteController = async(req,res) =>{
     }
 }
 
-module.exports = { handleBookStoreController, handleBookListStoreController,handlerBookDeleteController };
+const handleBookUpdateController= async (req,res)=>{
+    
+    try {
+        const {id} = req.params
+        const body= req.body
+
+        console.log("updating::::::",id,"\n",body);
+        const updating= await Book.findByIdAndUpdate(id,body,{new:true});
+        console.log("updating",updating);
+
+        return res.json({
+            Message:"Book Updated Successfully",
+            success:true,
+    })
+    } catch (error) {
+        return res.status(500).json({ Message: "updating error", success: false });
+    }
+};
+module.exports = { handleBookStoreController, handleBookListStoreController,handlerBookDeleteController,handleBookUpdateController };
